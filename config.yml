@@ -1,0 +1,13 @@
+base_path: /data/litellm
+litellm_packages:
+- openai<1.100.0
+- google-cloud-aiplatform==1.138.0
+- litellm[proxy,extra_proxy]==1.81.12
+
+log_request_response_data: false
+server_root_path: /llm
+litellm_mode: built-in
+litellm_database_mode: elitea
+litellm_db_name: litellm
+external_litellm_url: ""
+allow_project_own_llms: true

@@ -1,0 +1,124 @@
+{
+  "$schema": "https://elitea.ai/admin-config-schema/v1",
+  "plugin": "runtime_engine_litellm",
+  "properties": {
+    "litellm_mode": {
+      "type": "string",
+      "title": "LiteLLM Mode",
+      "description": "Use the built-in Elitea LiteLLM proxy or connect to an external instance.",
+      "path": "litellm_mode",
+      "section": "litellm",
+      "default": "built-in",
+      "enum": ["built-in", "external"],
+      "requires_restart": true,
+      "sync_targets": [
+        { "pylon": "pylon-main", "plugin": "runtime_interface_litellm", "path": "litellm_mode" }
+      ]
+    },
+    "litellm_database_mode": {
+      "type": "string",
+      "title": "Database",
+      "description": "Use the shared Elitea database or a custom PostgreSQL connection string.",
+      "path": "litellm_database_mode",
+      "section": "litellm",
+      "default": "elitea",
+      "enum": ["elitea", "custom"],
+      "requires_restart": true,
+      "visible_when": { "field": "litellm_mode", "value": "built-in" }
+    },
+    "litellm_db_name": {
+      "type": "string",
+      "title": "LiteLLM Database Name",
+      "description": "Database name for LiteLLM on the shared PostgreSQL server. Uses POSTGRES_* env vars for host/credentials.",
+      "path": "litellm_db_name",
+      "section": "litellm",
+      "default": "litellm",
+      "requires_restart": true,
+      "visible_when": [
+        { "field": "litellm_mode", "value": "built-in" },
+        { "field": "litellm_database_mode", "value": "elitea" }
+      ]
+    },
+    "database_url": {
+      "type": "string",
+      "format": "password",
+      "title": "Custom Database URL",
+      "description": "PostgreSQL connection string. Example: postgresql://user:pass@host:5432/litellm_db",
+      "path": "database_url",
+      "section": "litellm",
+      "default": null,
+      "requires_restart": true,
+      "visible_when": { "field": "litellm_database_mode", "value": "custom" }
+    },
+    "external_litellm_url": {
+      "type": "string",
+      "title": "External LiteLLM URL",
+      "description": "Base URL of the external LiteLLM instance (e.g., https://litellm.example.com/llm).",
+      "path": "external_litellm_url",
+      "section": "litellm",
+      "default": "",
+      "requires_restart": true,
+      "visible_when": { "field": "litellm_mode", "value": "external" },
+      "sync_targets": [
+        { "pylon": "pylon-main", "plugin": "runtime_interface_litellm", "path": "external_litellm_url" }
+      ]
+    },
+    "litellm_master_key": {
+      "type": "string",
+      "format": "password",
+      "title": "Master Key",
+      "description": "API key for authenticating LiteLLM proxy requests.",
+      "path": "litellm_master_key",
+      "section": "litellm",
+      "default": null,
+      "requires_restart": true,
+      "sync_targets": [
+        { "pylon": "pylon-main", "plugin": "runtime_interface_litellm", "path": "litellm_master_key" }
+      ]
+    },
+    "log_request_response_data": {
+      "type": "boolean",
+      "title": "Log Request/Response Data",
+      "description": "Store full prompts and completions in LiteLLM spend logs.",
+      "path": "log_request_response_data",
+      "section": "litellm",
+      "default": false,
+      "requires_restart": true,
+      "visible_when": { "field": "litellm_mode", "value": "built-in" }
+    },
+    "allow_project_own_llms": {
+      "type": "boolean",
+      "title": "Allow Projects to Bring Own LLMs",
+      "description": "When disabled, only public project models are available to all projects.",
+      "path": "allow_project_own_llms",
+      "section": "litellm",
+      "default": true,
+      "requires_restart": false,
+      "sync_targets": [
+        { "pylon": "pylon-main", "plugin": "runtime_interface_litellm", "path": "allow_project_own_llms" }
+      ]
+    },
+    "sync_llm_entities": {
+      "type": "action",
+      "title": "Sync LLM Entities",
+      "description": "Reconcile all teams, keys, and models across all projects. Long-running operation.",
+      "section": "litellm",
+      "action_task": "sync_llm_entities",
+      "visible_when": { "field": "litellm_mode", "value": "built-in" }
+    },
+    "import_llm_models": {
+      "type": "action",
+      "title": "Import Models from LiteLLM",
+      "description": "Discover unmanaged models in LiteLLM, create configuration records, and update team access for all projects.",
+      "section": "litellm",
+      "action_task": "import_llm_models"
+    },
+    "seed_llm_keys": {
+      "type": "action",
+      "title": "Seed Project Keys",
+      "description": "Create missing LiteLLM teams and API keys for all projects. Use after initial setup or if projects are missing access.",
+      "section": "litellm",
+      "action_task": "seed_llm_keys"
+    }
+  }
+}
