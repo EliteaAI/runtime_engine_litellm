@@ -52,6 +52,7 @@ class Method:  # pylint: disable=E1101,R0902,R0903,W0201
             parsed = urlparse(config["external_litellm_url"])
             self.api_base_url = urlunparse((parsed.scheme, parsed.netloc, "", "", "", ""))
         else:
+            self.apt_packages(config.get("apt_packages", ["libsndfile1"]))
             self.venv_create(config)
             self.venv_packages(config)
             #
