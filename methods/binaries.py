@@ -68,6 +68,46 @@ class Method:  # pylint: disable=E1101,R0903,W0201
 
 
     @web.method()
+    def apt_packages(self, packages):
+        """ Install system packages required by LiteLLM (e.g. libsndfile1 for audio support). """
+        if not packages:
+            return
+        #
+        import subprocess  # pylint: disable=C0415
+        #
+        missing = []
+        for pkg in packages:
+            result = subprocess.run(
+                ["dpkg", "-s", pkg],
+                capture_output=True,
+            )
+            if result.returncode != 0:
+                missing.append(pkg)
+        #
+        if not missing:
+            log.info("System packages already installed: %s", list(packages))
+            return
+        #
+        log.info("Installing missing system packages: %s", missing)
+        #
+        env = {**os.environ, "DEBIAN_FRONTEND": "noninteractive"}
+        try:
+            subprocess.run(
+                ["apt-get", "update", "-qq"],
+                env=env,
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(
+                ["apt-get", "install", "-y", "--no-install-recommends"] + missing,
+                env=env,
+                check=True,
+                capture_output=True,
+            )
+        except Exception as exc:  # pylint: disable=W0703
+            log.warning("apt_packages: failed to install %s: %s", missing, exc)
+
+    @web.method()
     def venv_packages(self, config):
         """ Method """
         bin_pip = config["bin_pip"]
