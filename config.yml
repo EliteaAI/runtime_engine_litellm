@@ -1,8 +1,8 @@
 base_path: /data/litellm
 litellm_packages:
-- openai<2.9
+- openai>=2.30.0
 - google-cloud-aiplatform==1.138.0
-- litellm[proxy,extra_proxy]==1.81.12
+- litellm[proxy,extra_proxy]==1.83.7
 
 log_request_response_data: false
 server_root_path: /llm
