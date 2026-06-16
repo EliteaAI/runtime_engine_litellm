@@ -1,6 +1,6 @@
 base_path: /data/litellm
 litellm_packages:
-- openai>=2.30.0
+- openai<2.25
 - google-cloud-aiplatform==1.138.0
 - litellm[proxy,extra_proxy]==1.83.14
 
