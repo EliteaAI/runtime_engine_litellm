@@ -17,10 +17,22 @@
 
 """ Method """
 
+import logging
 import threading
 
 from pylon.core.tools import log  # pylint: disable=E0611,E0401,W0611
 from pylon.core.tools import web  # pylint: disable=E0611,E0401,W0611
+
+
+def _line_level(line: str) -> int:
+    # Strip ANSI escapes cheaply (LiteLLM uses \x1b[...m colour codes)
+    clean = line.replace('\x1b', '')
+    prefix = clean[:50]
+    if ':ERROR' in prefix or ':CRITICAL' in prefix:
+        return logging.ERROR
+    if ':WARNING' in prefix:
+        return logging.WARNING
+    return logging.DEBUG
 
 
 class ProcessWatcher(threading.Thread):  # pylint: disable=R0903
@@ -38,7 +50,7 @@ class ProcessWatcher(threading.Thread):  # pylint: disable=R0903
             line = self.module.runtime_process.stdout.readline().decode().strip()
             #
             if line:
-                log.info(line)
+                log.log(_line_level(line), "%s", line)
 
     def stop(self):
         """ Request to stop """
