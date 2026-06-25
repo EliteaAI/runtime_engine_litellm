@@ -118,6 +118,10 @@ class Method:  # pylint: disable=E1101,R0902,R0903,W0201
         worker_core.event_node.emit(
             "runtime_engine_ready", {}
         )
+        worker_core.event_node.subscribe(
+            "runtime_engine_ready_request",
+            lambda *_args, **_kwargs: worker_core.event_node.emit("runtime_engine_ready", {}),
+        )
 
     @web.deinit()
     def deinit(self):
