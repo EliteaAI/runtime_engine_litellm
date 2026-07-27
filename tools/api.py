@@ -368,3 +368,127 @@ class LiteLLMClient:  # pylint: disable=R0904
             endpoint="/utils/token_counter",
             data=data,
         )
+
+    #
+    # Tags (per-project cost budgets)
+    #
+
+    def tag_new(self, name, max_budget=None, models=None, description=None):
+        """ Call """
+        data = {
+            "name": name,
+        }
+        #
+        if max_budget is not None:
+            data["max_budget"] = max_budget
+        #
+        if models is not None:
+            data["models"] = models
+        #
+        if description is not None:
+            data["description"] = description
+        #
+        return self._post_json(
+            endpoint="/tag/new",
+            data=data,
+        )
+
+    def tag_update(self, name, max_budget=None, description=None):
+        """ Call """
+        data = {
+            "name": name,
+        }
+        #
+        if max_budget is not None:
+            data["max_budget"] = max_budget
+        #
+        if description is not None:
+            data["description"] = description
+        #
+        return self._post_json(
+            endpoint="/tag/update",
+            data=data,
+        )
+
+    def tag_upsert(self, name, max_budget=None, description=None):
+        """Create the tag, or update it if it already exists.
+
+        LiteLLM reports an existing tag as a 500 wrapping "already exists", so detect
+        it from the body rather than the status code.
+        """
+        try:
+            return self.tag_new(
+                name=name,
+                max_budget=max_budget,
+                description=description,
+            )
+        except requests.HTTPError as error:
+            if error.response is None:
+                raise
+            #
+            if "already exists" not in (error.response.text or ""):
+                raise
+            #
+            return self.tag_update(
+                name=name,
+                max_budget=max_budget,
+                description=description,
+            )
+
+    def tag_update_if_exists(self, name, max_budget=None, description=None):
+        """Update a tag only if it already exists; no-op otherwise.
+
+        Used to lift a limit without creating a tag that never had a budget.
+        """
+        try:
+            return self.tag_update(
+                name=name,
+                max_budget=max_budget,
+                description=description,
+            )
+        except requests.HTTPError as error:
+            if error.response is not None and "not found" in (error.response.text or "").lower():
+                return None
+            #
+            raise
+
+    def tag_info(self, names):
+        """ Call """
+        return self._post_json(
+            endpoint="/tag/info",
+            data={
+                "names": names,
+            },
+        )
+
+    def tag_delete(self, name):
+        """ Call """
+        return self._post_json(
+            endpoint="/tag/delete",
+            data={
+                "name": name,
+            },
+        )
+
+    def tag_daily_activity(  # pylint: disable=R0913
+            self, tags=None, start_date=None, end_date=None, page=1, page_size=50,
+    ):
+        """ Call """
+        params = {
+            "page": page,
+            "page_size": page_size,
+        }
+        #
+        if tags is not None:
+            params["tags"] = ",".join(tags)
+        #
+        if start_date is not None:
+            params["start_date"] = start_date
+        #
+        if end_date is not None:
+            params["end_date"] = end_date
+        #
+        return self._get_json(
+            endpoint="/tag/daily/activity",
+            params=params,
+        )
