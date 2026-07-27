@@ -461,6 +461,15 @@ class LiteLLMClient:  # pylint: disable=R0904
             },
         )
 
+    def tag_list(self):
+        """ Call """
+        result = self._get_json(endpoint="/tag/list")
+        #
+        if isinstance(result, dict):
+            return list(result.values())
+        #
+        return result or []
+
     def tag_delete(self, name):
         """ Call """
         return self._post_json(
