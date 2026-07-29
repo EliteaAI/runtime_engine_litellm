@@ -86,6 +86,16 @@
       "requires_restart": true,
       "visible_when": { "field": "litellm_mode", "value": "built-in" }
     },
+    "debug_raw_request_capture": {
+      "type": "boolean",
+      "title": "Debug: Capture Raw Provider Requests",
+      "description": "Enables additional debug logging on the LiteLLM process. Note: also MUST set indexer_worker's log_level to DEBUG or these lines won't reach container logs.",
+      "path": "debug_raw_request_capture",
+      "section": "litellm",
+      "default": false,
+      "requires_restart": true,
+      "visible_when": { "field": "litellm_mode", "value": "built-in" }
+    },
     "allow_project_own_llms": {
       "type": "boolean",
       "title": "Allow Projects to Bring Own LLMs",

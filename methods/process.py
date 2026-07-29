@@ -124,6 +124,9 @@ class Method:  # pylint: disable=E1101,R0903,W0201
         if config["enable_azure_ad_token_refresh"]:
             target_config["litellm_settings"]["enable_azure_ad_token_refresh"] = True
         #
+        if config["debug_raw_request_capture"]:
+            target_env["LITELLM_LOG"] = "DEBUG"
+        #
         config_path = os.path.join(config["base_path"], "config.yml")
         #
         with open(config_path, "w", encoding="utf-8") as file:
