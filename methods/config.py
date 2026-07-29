@@ -50,6 +50,7 @@ class Method:  # pylint: disable=E1101,R0903,W0201
                 #
                 "log_request_response_data": False,
                 "enable_azure_ad_token_refresh": True,
+                "debug_raw_request_capture": False,
             },
             lambda result: {
                 "litellm_venv": os.path.join(result["base_path"], "venv"),
