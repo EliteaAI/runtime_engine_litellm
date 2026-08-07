@@ -411,29 +411,39 @@ class LiteLLMClient:  # pylint: disable=R0904
         )
 
     def tag_upsert(self, name, max_budget=None, description=None):
-        """Create the tag, or update it if it already exists.
+        """Update the tag, creating it first if it doesn't exist yet.
 
-        LiteLLM reports an existing tag as a 500 wrapping "already exists", so detect
-        it from the body rather than the status code.
+        Update-first means the tag is missing on at most its very first sync ever;
+        every call after that succeeds on /tag/update directly, with no failed
+        request in between (LiteLLM logs every /tag/new or /tag/update exception
+        at ERROR, including these expected ones).
         """
         try:
-            return self.tag_new(
-                name=name,
-                max_budget=max_budget,
-                description=description,
-            )
-        except requests.HTTPError as error:
-            if error.response is None:
-                raise
-            #
-            if "already exists" not in (error.response.text or ""):
-                raise
-            #
             return self.tag_update(
                 name=name,
                 max_budget=max_budget,
                 description=description,
             )
+        except requests.HTTPError as error:
+            if error.response is None or "not found" not in (error.response.text or "").lower():
+                raise
+            #
+            try:
+                return self.tag_new(
+                    name=name,
+                    max_budget=max_budget,
+                    description=description,
+                )
+            except requests.HTTPError as create_error:
+                if create_error.response is None or \
+                        "already exists" not in (create_error.response.text or ""):
+                    raise
+                #
+                return self.tag_update(
+                    name=name,
+                    max_budget=max_budget,
+                    description=description,
+                )
 
     def tag_update_if_exists(self, name, max_budget=None, description=None):
         """Update a tag only if it already exists; no-op otherwise.
