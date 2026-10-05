@@ -17,6 +17,8 @@
 
 """ Method """
 
+from urllib.parse import quote
+
 from pylon.core.tools import log  # pylint: disable=E0611,E0401,W0611
 from pylon.core.tools import web  # pylint: disable=E0611,E0401,W0611
 
@@ -316,6 +318,21 @@ class LiteLLMClient:  # pylint: disable=R0904
         return self._get_json(
             endpoint="/credentials",
         )["credentials"]
+
+    def credential_exists(self, credential_name, timeout=...):
+        """ Call """
+        try:
+            self._get_json(
+                endpoint=f"/credentials/by_name/{quote(credential_name, safe='')}",
+                timeout=timeout,
+            )
+        except requests.HTTPError as error:
+            if error.response is not None and error.response.status_code == 404:
+                return False
+            #
+            raise
+        #
+        return True
 
     def credential_delete(self, credential_name):
         """ Call """
