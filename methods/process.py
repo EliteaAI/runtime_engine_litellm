@@ -29,6 +29,8 @@ from pylon.core.tools import process  # pylint: disable=E0611,E0401
 
 from ..tools.watcher import ProcessWatcher
 
+RESPONSES_API_MIN_OUTPUT_TOKENS = "16"
+
 
 class Method:  # pylint: disable=E1101,R0903,W0201
     """
@@ -103,6 +105,8 @@ class Method:  # pylint: disable=E1101,R0903,W0201
         target_env["LITELLM_MASTER_KEY"] = config["litellm_master_key"]
         target_env["DATABASE_URL"] = config["database_url"]
         target_env["STORE_MODEL_IN_DB"] = "True"
+        target_env["BACKGROUND_HEALTH_CHECK_MAX_TOKENS"] = RESPONSES_API_MIN_OUTPUT_TOKENS
+        target_env["BACKGROUND_HEALTH_CHECK_MAX_TOKENS_REASONING"] = RESPONSES_API_MIN_OUTPUT_TOKENS
         #
         target_config = {
             "general_settings": {
