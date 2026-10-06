@@ -63,6 +63,17 @@ class LiteLLMClient:  # pylint: disable=R0904
         #
         return result.json()
 
+    def _patch_json(self, endpoint, data, timeout=...):
+        result = self.session.patch(
+            self._endpoint(endpoint),
+            json=data,
+            timeout=self.timeout if timeout is ... else timeout,
+        )
+        #
+        result.raise_for_status()
+        #
+        return result.json()
+
     def _delete_json(self, endpoint, params=None, timeout=...):
         result = self.session.delete(
             self._endpoint(endpoint),
@@ -333,6 +344,19 @@ class LiteLLMClient:  # pylint: disable=R0904
             raise
         #
         return True
+
+    def credential_update(self, credential_name, credential_values, credential_info):
+        """ Call """
+        result = self._patch_json(
+            endpoint=f"/credentials/{quote(credential_name, safe='')}",
+            data={
+                "credential_name": credential_name,
+                "credential_values": credential_values,
+                "credential_info": credential_info,
+            },
+        )
+        #
+        return result.get("success") is True
 
     def credential_delete(self, credential_name):
         """ Call """

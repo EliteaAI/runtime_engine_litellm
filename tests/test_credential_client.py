@@ -37,5 +37,31 @@ class TestCredentialExists(unittest.TestCase):
             self.client.credential_exists("7_cred")
 
 
+
+class TestCredentialUpdate(unittest.TestCase):
+
+    def setUp(self):
+        api = _load_api_module()
+        self.client = api.LiteLLMClient("http://litellm", "key")
+        self.client._patch_json = Mock(return_value={"success": True, "message": "Credential updated successfully"})
+
+    def test_values_are_patched_onto_the_named_credential(self):
+        self.assertTrue(self.client.credential_update("7_cred", {"api_key": "k"}, {"custom_llm_provider": "OpenAI"}))
+        self.client._patch_json.assert_called_once_with(
+            endpoint="/credentials/7_cred",
+            data={"credential_name": "7_cred", "credential_values": {"api_key": "k"},
+                  "credential_info": {"custom_llm_provider": "OpenAI"}},
+        )
+
+    def test_an_error_body_with_a_success_status_is_not_an_update(self):
+        self.client._patch_json.return_value = {"message": "Credential not found in DB.", "code": "404"}
+        self.assertFalse(self.client.credential_update("7_cred", {"api_key": "k"}, {}))
+
+    def test_gateway_errors_propagate(self):
+        self.client._patch_json.side_effect = _http_error(500, "boom")
+        with self.assertRaises(requests.HTTPError):
+            self.client.credential_update("7_cred", {"api_key": "k"}, {})
+
+
 if __name__ == "__main__":
     unittest.main()
