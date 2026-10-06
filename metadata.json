@@ -1,6 +1,6 @@
 {
   "name": "Runtime engine: LiteLLM",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "depends_on": [
     "worker_core"
   ],
