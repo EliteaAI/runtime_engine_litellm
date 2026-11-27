@@ -289,6 +289,16 @@ class LiteLLMClient:  # pylint: disable=R0904
             } if model_group is not None else None,
         )["data"]
 
+    def model_cost_map(self, timeout=...):
+        """ Call """
+        return self._get_json(
+            endpoint="/public/litellm_model_cost_map",
+            params={
+                "catalog_only": "true",
+            },
+            timeout=timeout,
+        )
+
     def model_delete(self, model_id):
         """ Call """
         return self._post_json(
